@@ -34,33 +34,34 @@ wss.on('message', async function(message) {
 
         // Ask chatgpt about the headline, requires credits / money within the API. 
         //------------------------------------------------------
-        // const apiRequestBody = {
-        //     "model": "gpt-3.5-turbo",
-        //     "messages": [
-        //         {role: "system", content: "Respond solely with a number 1-100 detailing the impact of the headline"},
-        //         {role: "user", content: "Given the headline '" + currentEvent.headline + "', show me a number from 1-100 detailing the impact of this headline"},
-        //          // works better with repetition
-        //     ]
-        // }
-        // await fetch("https://api.openai.com/v1/chat/completions", {
-        //     method: "POST",
-        //     headers: {
-        //         "Authorization": "Bearer " + process.env.OPENAI_API_KEY,
-        //         "Content-Type": "application/json"
-        //     },
-        //     body: JSON.stringify(apiRequestBody),
-        // }).then((data) => { // returns promise
-        //     return data.json();
-        // }) .then((data) => {
-        //     // data is CHATGPT response
-        //     console.log(data);
-        //     console.log(data.choices[0].message)
-        //     companyImpact = parseInt(data.choices[0].message.content);
-        // });
-        // const TickerSymbol = currentEvent.symbols[0];
+        const apiRequestBody = {
+            "model": "gpt-3.5-turbo",
+            "messages": [
+                {role: "system", content: "Respond solely with a number 1-100 detailing the impact of the headline"},
+                {role: "user", content: "Given the headline '" + currentEvent.headline + "', show me a number from 1-100 detailing the impact of this headline"},
+                 // works better with repetition
+            ]
+        }
+        await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + process.env.OPENAI_API_KEY,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(apiRequestBody),
+        }).then((data) => { // returns promise
+            return data.json();
+        }) .then((data) => {
+            // data is CHATGPT response
+            console.log(data);
+            console.log(data.choices[0].message)
+            companyImpact = parseInt(data.choices[0].message.content);
+        });
+        const TickerSymbol = currentEvent.symbols[0];
         //-----------------------------------------------------------
-        const TickerSymbol = "TSLA"
-        if (companyImpact <= 2) 
+        // const TickerSymbol = "TSLA"
+
+        if (companyImpact >= 60) 
         {
             let order = await alpaca.createOrder({
                 symbol: TickerSymbol,
@@ -71,12 +72,12 @@ wss.on('message', async function(message) {
                 // Other optional parameters, such as stop loss. 
             })
         }
-        else if (companyImpact <= 100)
+        else if (companyImpact <= 40)
         {
             let closedPosition = alpaca.closePosition(TickerSymbol); // Can put any symbol in.
         }
+
         // We can do a lot here, ask anything specific in a consistent data type of way
-        // In this case I am going to do 1 -100, 1 being negative, 10 being most positive. 
-        // based on company impact we do something
+        // In this case I am going to do 1 - 100, 1 being negative, 10 being most positive. 
     }
 })
